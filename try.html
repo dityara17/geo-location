@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <p id="geo-city"></p>
+    <script>
+      function createCookie(name, value, days) {
+        var expires;
+
+        if (days) {
+          var date = new Date();
+          date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+          expires = "; expires=" + date.toGMTString();
+        } else {
+          expires = "";
+        }
+        document.cookie =
+          encodeURIComponent(name) +
+          "=" +
+          encodeURIComponent(value) +
+          expires +
+          "; path=/";
+      }
+
+      function readCookie(name) {
+        var nameEQ = encodeURIComponent(name) + "=";
+        var ca = document.cookie.split(";");
+        for (var i = 0; i < ca.length; i++) {
+          var c = ca[i];
+          while (c.charAt(0) === " ") c = c.substring(1, c.length);
+          if (c.indexOf(nameEQ) === 0)
+            return decodeURIComponent(c.substring(nameEQ.length, c.length));
+        }
+        return null;
+      }
+
+      var geo_city_cookie = "geo_city";
+
+    //   var endpoint = "https://pro.ip-api.com/json/?key=SCTVKiBILVWaN3t";
+      var endpoint = "http://ip-api.com/json";
+
+      var xhr = new XMLHttpRequest();
+
+      var geo_city = "";
+
+      xhr.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+          var response = JSON.parse(this.responseText);
+
+          if (response.status !== "success") {
+            return;
+          }
+
+          var geo_city = response.city;
+
+          createCookie(geo_city_cookie, geo_city, 1 / 24);
+
+          np_update_geo_city(geo_city);
+        }
+      };
+
+      xhr.open("GET", endpoint, true);
+      xhr.send();
+
+      function np_update_geo_city(value) {
+        var city = document.getElementById("geo-city");
+
+        if (city) {
+          city.innerHTML = value;
+        }
+      }
+
+      if (readCookie(geo_city_cookie)) {
+        np_update_geo_city(readCookie(geo_city_cookie));
+      }
+    </script>
+  </body>
+</html>
